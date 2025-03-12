@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:main_draft1/main.dart';
 import 'package:main_draft1/screens/login.dart';
+import 'package:main_draft1/screens/softskill.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:lottie/lottie.dart';
 
@@ -47,11 +48,12 @@ class _RegistrationState extends State<Registration> {
         'user_address': addressController.text,
         'user_password': passwordController.text,
       });
-
-      print("Inserted");
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => SoftSkill()),
+      );
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text("New User Added")));
-          
     } catch (e) {
       print("Error $e");
     }
@@ -67,7 +69,9 @@ class _RegistrationState extends State<Registration> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                SizedBox(height: 15,),
+                SizedBox(
+                  height: 15,
+                ),
                 Lottie.asset('assets/JobAnimation.json', height: 150),
                 const SizedBox(height: 20),
                 const Text(
@@ -86,8 +90,9 @@ class _RegistrationState extends State<Registration> {
                     children: [
                       TextFormField(
                         controller: nameController,
-                        validator: (value) =>
-                            value!.isEmpty ? "Please enter your full name" : null,
+                        validator: (value) => value!.isEmpty
+                            ? "Please enter your full name"
+                            : null,
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.grey[200],
@@ -118,8 +123,9 @@ class _RegistrationState extends State<Registration> {
                       const SizedBox(height: 20),
                       TextFormField(
                         controller: phoneController,
-                        validator: (value) =>
-                            value!.isEmpty ? "Please enter your phone number" : null,
+                        validator: (value) => value!.isEmpty
+                            ? "Please enter your phone number"
+                            : null,
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.grey[200],
@@ -135,8 +141,9 @@ class _RegistrationState extends State<Registration> {
                       TextFormField(
                         controller: passwordController,
                         obscureText: passwordVisible,
-                        validator: (value) =>
-                            value!.isEmpty ? "Please enter your password" : null,
+                        validator: (value) => value!.isEmpty
+                            ? "Please enter your password"
+                            : null,
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.grey[200],
@@ -185,7 +192,8 @@ class _RegistrationState extends State<Registration> {
                                 : Icons.visibility),
                             onPressed: () {
                               setState(() {
-                                confirmPasswordVisible = !confirmPasswordVisible;
+                                confirmPasswordVisible =
+                                    !confirmPasswordVisible;
                               });
                             },
                           ),
@@ -199,12 +207,14 @@ class _RegistrationState extends State<Registration> {
                           onPressed: () => signup(),
                           style: ElevatedButton.styleFrom(
                             foregroundColor: Colors.white,
-                            backgroundColor: const Color.fromARGB(255, 51, 31, 199),
+                            backgroundColor:
+                                const Color.fromARGB(255, 51, 31, 199),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text("Sign Up", style: TextStyle(fontSize: 18)),
+                          child: const Text("Sign Up",
+                              style: TextStyle(fontSize: 18)),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -212,7 +222,8 @@ class _RegistrationState extends State<Registration> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const Login()),
+                            MaterialPageRoute(
+                                builder: (context) => const Login()),
                           );
                         },
                         child: const Text(

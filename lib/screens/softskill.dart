@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:main_draft1/main.dart';
 import 'package:main_draft1/screens/technicalskills.dart';
 
 class SoftSkill extends StatefulWidget {
@@ -9,64 +10,47 @@ class SoftSkill extends StatefulWidget {
 }
 
 class _SoftSkillState extends State<SoftSkill> {
-  List<Map<String, String>> mockSoftSkills = [
-    { 'softskill_name': 'Communication'},
-    { 'softskill_name': 'Teamwork'},
-    { 'softskill_name': 'Problem-Solving'},
-    { 'softskill_name': 'Adaptability'},
-    { 'softskill_name': 'Leadership'},
-    { 'softskill_name': 'Time Management'},
-    { 'softskill_name': 'Creativity'},
-    { 'softskill_name': 'Conflict Resolution'},
-    { 'softskill_name': 'Critical Thinking'},
-    { 'softskill_name': 'Work Ethic'},
-    { 'softskill_name': 'Empathy'},
-    { 'softskill_name': 'Patience'},
-    { 'softskill_name': 'Collaboration'},
-    { 'softskill_name': 'Decision-Making'},
-    { 'softskill_name': 'Conflict Management'},
-    { 'softskill_name': 'Resilience'},
-    { 'softskill_name': 'Open-Mindedness'},
-    { 'softskill_name': 'Interpersonal Skills'},
-    { 'softskill_name': 'Negotiation'},
-    { 'softskill_name': 'Time Efficiency'},
-    { 'softskill_name': 'Self-Discipline'},
-    { 'softskill_name': 'Stress Management'},
-    { 'softskill_name': 'Accountability'},
-    { 'softskill_name': 'Confidence'},
-    { 'softskill_name': 'Motivation'},
-    { 'softskill_name': 'Active Listening'},
-    { 'softskill_name': 'Delegation'},
-    { 'softskill_name': 'Public Speaking'},
-    { 'softskill_name': 'Creativity'},
-    { 'softskill_name': 'Innovation'},
-    { 'softskill_name': 'Goal-Oriented'},
-    { 'softskill_name': 'Mentoring'},
-    { 'softskill_name': 'Time Awareness'},
-    { 'softskill_name': 'Conflict Avoidance'},
-    { 'softskill_name': 'Self-Motivation'},
-    { 'softskill_name': 'Work-Life Balance'},
-    { 'softskill_name': 'Project Management'},
-    { 'softskill_name': 'Organizational Skills'},
-    { 'softskill_name': 'Attention to Detail'},
-    { 'softskill_name': 'Strategic Thinking'},
-    { 'softskill_name': 'Adaptability to Change'},
-    { 'softskill_name': 'Crisis Management'},
-    { 'softskill_name': 'Public Relations'},
-    { 'softskill_name': 'Visionary Thinking'},
-    { 'softskill_name': 'Customer Focus'},
-    { 'softskill_name': 'Mindfulness'},
-    { 'softskill_name': 'Continuous Learning'},
-    { 'softskill_name': 'Workplace Etiquette'},
-    { 'softskill_name': 'Team Building'},
-    { 'softskill_name': 'Stress Resilience'},
-  ];
+  List<Map<String, dynamic>> mockSoftSkills = [];
+  List<int> selectedSkills = [];
+  String searchQuery = '';
 
-  List<String> selectedSkills = [];
-  String searchQuery = '';  // Add this variable to store the search query
+  @override
+  void initState() {
+    super.initState();
+    fetchSkill();
+  }
 
-  // Function to toggle skill selection
-  void toggleSkill(String id) {
+  Future<void> insert() async {
+    try {
+      for (var i = 0; i < selectedSkills.length; i++) {
+        await supabase.from('tbl_usersoftskill').insert([
+          {
+            'softskill_id': selectedSkills[i],
+          }
+        ]);
+      }
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const TechnicalSkills()),
+      );
+    } catch (e) {
+      print("Error Inserting Skills: $e");
+    }
+  }
+
+  Future<void> fetchSkill() async {
+    try {
+      final response = await supabase.from('tbl_softskill').select();
+      setState(() {
+        mockSoftSkills = response;
+      });
+      print(response);
+    } catch (e) {
+      print("Error Fetching Skills: $e");
+    }
+  }
+
+  void toggleSkill(int id) {
     setState(() {
       if (selectedSkills.contains(id)) {
         selectedSkills.remove(id);
@@ -76,71 +60,96 @@ class _SoftSkillState extends State<SoftSkill> {
     });
   }
 
-  // Function to filter skills based on search query
-  List<Map<String, String>> getFilteredSkills() {
+  List<Map<String, dynamic>> getFilteredSkills() {
     if (searchQuery.isEmpty) {
-      return mockSoftSkills; // Return all skills if the search query is empty
+      return mockSoftSkills;
     }
     return mockSoftSkills
-        .where((skill) =>
-            skill['name']!.toLowerCase().contains(searchQuery.toLowerCase()))
-        .toList(); // Filter skills based on search query
+        .where((skill) => skill['softskills_name']!
+            .toLowerCase()
+            .contains(searchQuery.toLowerCase()))
+        .toList();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50], // Light background for a clean look
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              height: 65,
-            ),
+            const SizedBox(height: 65),
             Padding(
-              padding: const EdgeInsets.only(right: 85 ),
-              child: Text("Welcome!! \nSelect Your Soft Skills.",style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold),),
+              padding: const EdgeInsets.only(right: 85),
+              child: Text(
+                "Welcome!! \nSelect Your Soft Skills.",
+                style: TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
+                  color:
+                      Colors.blueGrey[800], // Darker text for better contrast
+                ),
+              ),
             ),
-            SizedBox(height: 25,),
+            const SizedBox(height: 25),
             TextFormField(
               onChanged: (query) {
                 setState(() {
-                  searchQuery = query;  // Update search query
+                  searchQuery = query;
                 });
               },
               decoration: InputDecoration(
                 hintText: "Search",
-                prefixIcon: const Icon(Icons.search),
+                hintStyle: TextStyle(color: Colors.grey[600]),
+                prefixIcon: Icon(Icons.search, color: Colors.blueGrey[800]),
+                filled: true,
+                fillColor: Colors.white,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(35),
+                  borderSide: BorderSide.none,
                 ),
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
               ),
             ),
             const SizedBox(height: 20),
-        
+
             // Skills Selection
-            Container(
-              height: 580,
+            Expanded(
               child: SingleChildScrollView(
                 child: Wrap(
-                  spacing: 10, // Horizontal spacing
-                  runSpacing: 10, // Vertical spacing
+                  spacing: 10,
+                  runSpacing: 10,
                   children: getFilteredSkills().map((skill) {
                     final isSelected = selectedSkills.contains(skill['id']);
                     return ChoiceChip(
-                      label: Text(skill['name']!),
-                      labelStyle: TextStyle(
-                        color: isSelected ? const Color.fromARGB(255, 3, 3, 3) : Colors.black,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      selected: isSelected,
-                      selectedColor: const Color.fromARGB(255, 250, 248, 248), // Background color when selected
-                      backgroundColor: const Color.fromARGB(255, 255, 255, 255), // Default background color
-                      shape: StadiumBorder(
-                        side: BorderSide(
-                          color: isSelected ? Color.fromARGB(255, 51, 31, 199) : Colors.grey.shade400,
+                      label: Text(
+                        skill['softskill_name']!,
+                        style: TextStyle(
+                          color:
+                              isSelected ? Colors.white : Colors.blueGrey[800],
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
+                      selected: isSelected,
+                      selectedColor:
+                          Color.fromARGB(255, 51, 31, 199), // Selected color
+                      backgroundColor: Colors.white, // Default color
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        side: BorderSide(
+                          color: isSelected
+                              ? Color.fromARGB(255, 51, 31, 199)
+                              : Colors.grey.shade300,
+                          width: 1.5,
+                        ),
+                      ),
+                      elevation:
+                          isSelected ? 3 : 0, // Add elevation when selected
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
                       onSelected: (_) => toggleSkill(skill['id']!),
                     );
                   }).toList(),
@@ -151,20 +160,25 @@ class _SoftSkillState extends State<SoftSkill> {
         ),
       ),
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(16),
         child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => TechnicalSkills(),));
-                  },
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: const Color.fromARGB(255, 51, 31, 199),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text("NEXT 1/5", style: TextStyle(fontSize: 18)),
-                ),
+          onPressed: () {
+            insert();
+            print(selectedSkills);
+          },
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Colors.white,
+            backgroundColor: Color.fromARGB(255, 51, 31, 199),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 16),
+          ),
+          child: const Text(
+            "NEXT 1/5",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ),
       ),
     );
   }

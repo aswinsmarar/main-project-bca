@@ -10,8 +10,7 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   @override
- 
-double _opacity = 0.0;
+  double _opacity = 0.0;
 
   @override
   void initState() {
@@ -27,8 +26,9 @@ double _opacity = 0.0;
     // Navigate to Login screen after 3 seconds
     Future.delayed(Duration(seconds: 3), () {
       Navigator.pushReplacement(
-        context, 
-        MaterialPageRoute(builder: (context) => Login()), // Navigate to Login Page
+        context,
+        MaterialPageRoute(
+            builder: (context) => Login()), // Navigate to Login Page
       );
     });
   }

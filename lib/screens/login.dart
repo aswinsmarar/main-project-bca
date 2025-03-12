@@ -22,8 +22,8 @@ class _LoginState extends State<Login> {
     String email = emailController.text;
     String password = passwordController.text;
     try {
-      final AuthResponse response = await supabase.auth.signInWithPassword(
-          password: password, email: email);
+      final AuthResponse response = await supabase.auth
+          .signInWithPassword(password: password, email: email);
       if (response.user != null) {
         Navigator.pushReplacement(
           context,
@@ -43,10 +43,10 @@ class _LoginState extends State<Login> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 50,),
+            SizedBox(
+              height: 50,
+            ),
             Lottie.asset('assets/JobAnimation.json'),
-           
-          
             const Text(
               "Login",
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
@@ -88,9 +88,7 @@ class _LoginState extends State<Login> {
                 hintText: "Password",
                 prefixIcon: const Icon(Icons.lock),
                 suffixIcon: IconButton(
-                  icon: Icon(passkey
-                      ? Icons.visibility_off
-                      : Icons.visibility),
+                  icon: Icon(passkey ? Icons.visibility_off : Icons.visibility),
                   onPressed: () {
                     setState(() {
                       passkey = !passkey;
