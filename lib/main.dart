@@ -6,6 +6,7 @@ import 'package:main_draft1/screens/login.dart';
 import 'package:main_draft1/screens/objective.dart';
 import 'package:main_draft1/screens/softskill.dart';
 import 'package:main_draft1/screens/technicalskills.dart';
+import 'package:main_draft1/screens/viewjob.dart';
 import 'package:main_draft1/screens/workexperience-form.dart';
 import 'package:main_draft1/screens/workexperience.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -18,7 +19,7 @@ Future<void> main() async {
   );
   runApp(const MainApp());
 }
-  
+
 final supabase = Supabase.instance.client;
 
 class MainApp extends StatelessWidget {
