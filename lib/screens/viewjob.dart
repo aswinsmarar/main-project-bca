@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:main_draft1/main.dart';
+import 'package:main_draft1/screens/uploadcv.dart';
 
 class JobViewPage extends StatefulWidget {
   final int jobId;
@@ -510,7 +511,16 @@ class _JobViewPageState extends State<JobViewPage> {
       ),
       child: SafeArea(
         child: ElevatedButton(
-          onPressed: _applyForJob,
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => UploadCV(
+                  jobId: widget.jobId,
+                ),
+              ),
+            );
+          },
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF2563EB),
             foregroundColor: Colors.white,

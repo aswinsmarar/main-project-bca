@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:main_draft1/main.dart';
+import 'package:main_draft1/main.dart'; // Assuming Supabase is initialized here
+import 'package:main_draft1/screens/notification.dart';
 import 'package:main_draft1/screens/viewjob.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -11,7 +13,10 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, dynamic>> jobs = [];
-  Future<void> fetchjob() async {
+  int _notificationCount = 0; // Notification count
+  StreamSubscription? _notificationSubscription;
+
+  Future<void> fetchJob() async {
     try {
       final response =
           await supabase.from('tbl_job').select('*, tbl_company(*)');
@@ -24,10 +29,58 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> fetchNotificationCount() async {
+    final userId = supabase.auth.currentUser!.id;
+    try {
+      final response = await supabase
+          .from('tbl_application')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('is_read', false)
+          .count();
+
+      print(response);
+      if (mounted) {
+        setState(() {
+          _notificationCount = response.count; // Access the count directly
+        });
+      }
+    } catch (e) {
+      print('Error fetching notification count: $e');
+    }
+  }
+
+  void setupRealtimeNotificationSubscription() {
+    final userId = supabase.auth.currentUser!.id;
+    _notificationSubscription = supabase
+        .from('tbl_application') // Replace with your notification table name
+        .stream(primaryKey: ['id']).listen((List<Map<String, dynamic>> data) {
+      final unreadCount = data
+          .where((notification) =>
+              notification['user_id'] == userId &&
+              notification['is_read'] == false)
+          .length;
+      if (mounted) {
+        setState(() {
+          _notificationCount = unreadCount;
+          print(_notificationCount);
+        });
+      }
+    });
+  }
+
   @override
   void initState() {
     super.initState();
-    fetchjob();
+    fetchJob();
+    fetchNotificationCount();
+    setupRealtimeNotificationSubscription();
+  }
+
+  @override
+  void dispose() {
+    _notificationSubscription?.cancel();
+    super.dispose();
   }
 
   @override
@@ -85,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     SizedBox(width: 5),
                     Text(
-                      '👋',
+                      '😊',
                       style: TextStyle(fontSize: 18),
                     ),
                   ],
@@ -101,15 +154,51 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-          ),
-          child: IconButton(
-            icon: const Icon(Icons.notifications_outlined, size: 28),
-            onPressed: () {},
-          ),
+        Stack(
+          alignment: Alignment.topRight,
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.notifications_outlined, size: 28),
+                onPressed: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => NotificationPage()),
+                  );
+                  fetchNotificationCount();
+                },
+              ),
+            ),
+            if (_notificationCount > 0)
+              Positioned(
+                right: 6,
+                top: 6,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 16,
+                    minHeight: 16,
+                  ),
+                  child: Text(
+                    '$_notificationCount',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+          ],
         ),
       ],
     );
@@ -309,11 +398,10 @@ class _HomeScreenState extends State<HomeScreen> {
           itemBuilder: (context, index) {
             final job = jobs[index];
             String company = job['tbl_company']['company_name'] ?? "Unknown";
-            String job_title = job['job_title'];
+            String jobTitle = job['job_title'];
             String salary = job['job_salary'] ?? "";
-            String jobtype = job['job_type'] ?? "";
-            String jobexperience = job['job_experience'] ?? "";
-
+            String jobType = job['job_type'] ?? "";
+            String jobExperience = job['job_experience'] ?? "";
             return GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -356,7 +444,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                job_title,
+                                jobTitle,
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -389,7 +477,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
-                                  jobtype,
+                                  jobType,
                                   style: TextStyle(
                                     color: Colors.grey[800],
                                     fontSize: 12,
@@ -407,7 +495,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
-                                  jobexperience,
+                                  jobExperience,
                                   style: TextStyle(
                                     color: Colors.grey[800],
                                     fontSize: 12,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:main_draft1/main.dart';
+import 'package:main_draft1/screens/homescreen.dart';
 
 class ResumeObjectiveGenerator extends StatefulWidget {
   const ResumeObjectiveGenerator({super.key});
@@ -11,6 +13,7 @@ class ResumeObjectiveGenerator extends StatefulWidget {
 
 class _ResumeObjectiveGeneratorState extends State<ResumeObjectiveGenerator> {
   final TextEditingController _controller = TextEditingController();
+  final TextEditingController _objcontroller = TextEditingController();
   String _generatedObjective = "";
   final String apiKey =
       "AIzaSyA3Dz0w6QeP6qtmLH9yj1ukdToL--VNVaw"; // Replace with your Gemini API key
@@ -22,6 +25,7 @@ class _ResumeObjectiveGeneratorState extends State<ResumeObjectiveGenerator> {
     final response = await model.generateContent([Content.text(prompt)]);
     setState(() {
       _generatedObjective = response.text ?? "Failed to generate objective";
+      _objcontroller.text = _generatedObjective;
     });
   }
 
@@ -39,6 +43,23 @@ class _ResumeObjectiveGeneratorState extends State<ResumeObjectiveGenerator> {
       print("Models: $models");
     } catch (e) {
       print("Error listing models: $e");
+    }
+  }
+
+  Future<void> insert() async {
+    try {
+      await supabase.from('tbl_objective').insert([
+        {
+          'objective': _objcontroller.text,
+        }
+      ]);
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomeScreen(),
+          ));
+    } catch (e) {
+      print("Error $e");
     }
   }
 
@@ -65,11 +86,38 @@ class _ResumeObjectiveGeneratorState extends State<ResumeObjectiveGenerator> {
                 child: Text('Generate Objective'),
               ),
               SizedBox(height: 16),
-              Text(
-                _generatedObjective,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              // Text(
+              //   _generatedObjective,
+              //   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              // ),
+
+              TextField(
+                controller: _objcontroller,
+                maxLines: 8,
+                decoration: InputDecoration(
+                  labelText: 'Objective',
+                  border: OutlineInputBorder(),
+                ),
               ),
             ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16),
+        child: ElevatedButton(
+          onPressed: insert,
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Colors.white,
+            backgroundColor: Color.fromARGB(255, 51, 31, 199),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 16),
+          ),
+          child: const Text(
+            "NEXT 5/5",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
       ),

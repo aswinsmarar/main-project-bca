@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:main_draft1/main.dart';
+import 'package:main_draft1/screens/homescreen.dart';
 import 'package:main_draft1/screens/objective.dart';
+import 'package:main_draft1/screens/uploadcv.dart';
 import 'package:main_draft1/screens/workexperience-form.dart';
 
 class WorkExperienceListScreen extends StatefulWidget {
