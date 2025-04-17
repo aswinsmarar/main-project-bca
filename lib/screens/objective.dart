@@ -53,6 +53,9 @@ class _ResumeObjectiveGeneratorState extends State<ResumeObjectiveGenerator> {
           'objective': _objcontroller.text,
         }
       ]);
+      await supabase
+          .from("tbl_user")
+          .update({'user_status': 1}).eq("id", supabase.auth.currentUser!.id);
       Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -116,7 +119,7 @@ class _ResumeObjectiveGeneratorState extends State<ResumeObjectiveGenerator> {
             padding: const EdgeInsets.symmetric(vertical: 16),
           ),
           child: const Text(
-            "NEXT 5/5",
+            "NEXT 6/6",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),

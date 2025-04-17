@@ -8,7 +8,7 @@ import 'package:main_draft1/screens/homescreen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class UploadCV extends StatefulWidget {
-  final int jobId;
+  final String jobId;
   const UploadCV({super.key, required this.jobId});
 
   @override
@@ -163,7 +163,7 @@ class _UploadCVState extends State<UploadCV> {
                   );
                 },
                 icon: const Icon(Icons.create),
-                label: const Text('Generate CV'),
+                label: const Text('Generate CV & Apply'),
                 style: ElevatedButton.styleFrom(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 40, vertical: 15),

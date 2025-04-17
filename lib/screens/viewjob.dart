@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:main_draft1/main.dart';
 import 'package:main_draft1/screens/uploadcv.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
 
 class JobViewPage extends StatefulWidget {
-  final int jobId;
+  final String jobId;
 
   const JobViewPage({super.key, required this.jobId});
 
@@ -15,12 +16,33 @@ class JobViewPage extends StatefulWidget {
 class _JobViewPageState extends State<JobViewPage> {
   bool isSaved = false;
   bool isLoading = true;
+  bool hasApplied = false;
+  bool _isSubscribed = false;
   Map<String, dynamic> jobData = {};
+  int? matchScore;
+  final String apiKey =
+      "AIzaSyA3Dz0w6QeP6qtmLH9yj1ukdToL--VNVaw"; // Replace with your Gemini API key
 
   @override
   void initState() {
     super.initState();
     fetchJob();
+    checkSubscription();
+  }
+
+  Future<void> checkSubscription() async {
+    final userId = supabase.auth.currentUser?.id;
+    if (userId != null) {
+      final response = await supabase
+          .from('tbl_user')
+          .select('subscription_status')
+          .eq('id', userId)
+          .single();
+      setState(() {
+        _isSubscribed = response['subscription_status'] ==
+            true; // Adjust based on your schema
+      });
+    }
   }
 
   Future<void> fetchJob() async {
@@ -62,16 +84,88 @@ class _JobViewPageState extends State<JobViewPage> {
       data['softskills'] = softskillsData;
       data['techskills'] = techskillsData;
 
+      // Check if the user has already applied
+      final userId = supabase.auth.currentUser?.id;
+      if (userId != null) {
+        final applicationResponse = await supabase
+            .from('tbl_application')
+            .select()
+            .eq('user_id', userId)
+            .eq('job_id', widget.jobId)
+            .maybeSingle();
+        hasApplied = applicationResponse != null;
+
+        // Fetch user skills and calculate match score
+        final userTechSkills = await supabase
+            .from('tbl_usertechnicalskill')
+            .select('*, tbl_technicalskills(technicalskill_name)')
+            .eq('user_id', userId);
+        final userSoftSkills = await supabase
+            .from('tbl_usersoftskill')
+            .select('*, tbl_softskill(softskill_name)')
+            .eq('user_id', userId);
+
+        final userTechSkillsList = userTechSkills
+            .map((s) => s['tbl_technicalskills']['technicalskill_name']
+                .toString()
+                .toLowerCase())
+            .toList();
+        final userSoftSkillsList = userSoftSkills
+            .map((s) =>
+                s['tbl_softskill']['softskill_name'].toString().toLowerCase())
+            .toList();
+
+        int score = 0;
+        for (var skill in techskillsData) {
+          if (userTechSkillsList.contains(skill.toLowerCase())) score += 20;
+        }
+        for (var skill in softskillsData) {
+          if (userSoftSkillsList.contains(skill.toLowerCase())) score += 15;
+        }
+        matchScore = score;
+      }
+
       setState(() {
         jobData = data;
         isLoading = false;
       });
     } catch (e) {
-      print('Error fetching job: $e');
+      print('Error fetching job or application status: $e');
       setState(() {
         isLoading = false;
       });
     }
+  }
+
+  Future<String> getSkillSuggestion(
+      List<String> jobTechSkills, List<String> jobSoftSkills) async {
+    final userId = supabase.auth.currentUser!.id;
+    final userTechSkills = await supabase
+        .from('tbl_usertechnicalskill')
+        .select('*, tbl_technicalskills(technicalskill_name)')
+        .eq('user_id', userId);
+    final userSoftSkills = await supabase
+        .from('tbl_usersoftskill')
+        .select('*, tbl_softskill(softskill_name)')
+        .eq('user_id', userId);
+
+    final userTechSkillsList = userTechSkills
+        .map((s) => s['tbl_technicalskills']['technicalskill_name']
+            .toString()
+            .toLowerCase())
+        .toList();
+    final userSoftSkillsList = userSoftSkills
+        .map((s) =>
+            s['tbl_softskill']['softskill_name'].toString().toLowerCase())
+        .toList();
+
+    final model = GenerativeModel(model: 'gemini-2.0-flash', apiKey: apiKey);
+    final prompt =
+        "Based on the job's required technical skills: $jobTechSkills and soft skills: $jobSoftSkills, "
+        "and the user's current technical skills: $userTechSkillsList and soft skills: $userSoftSkillsList, "
+        "provide a concise suggestion to improve the user's skills to better match the job requirements.";
+    final response = await model.generateContent([Content.text(prompt)]);
+    return response.text ?? "No suggestions available.";
   }
 
   void _applyForJob() {
@@ -102,27 +196,27 @@ class _JobViewPageState extends State<JobViewPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Job Details'),
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
-        actions: [
-          IconButton(
-            icon: Icon(
-              isSaved ? Icons.bookmark : Icons.bookmark_border,
-              color: isSaved ? const Color(0xFF2563EB) : Colors.black87,
-            ),
-            onPressed: _toggleSaveJob,
-          ),
-          IconButton(
-            icon: const Icon(Icons.share_outlined),
-            onPressed: () {
-              // Share functionality
-            },
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: Icon(
+        //       isSaved ? Icons.bookmark : Icons.bookmark_border,
+        //       color: isSaved ? const Color(0xFF2563EB) : Colors.black87,
+        //     ),
+        //     onPressed: _toggleSaveJob,
+        //   ),
+        //   IconButton(
+        //     icon: const Icon(Icons.share_outlined),
+        //     onPressed: () {
+        //       // Share functionality
+        //     },
+        //   ),
+        // ],
       ),
       body: isLoading
           ? const Center(
@@ -158,7 +252,9 @@ class _JobViewPageState extends State<JobViewPage> {
                     ],
                   ),
                 ),
-      bottomSheet: isLoading || jobData.isEmpty ? null : _buildApplyButton(),
+      bottomSheet: isLoading || jobData.isEmpty || hasApplied
+          ? null
+          : _buildApplyButton(),
     );
   }
 
@@ -329,6 +425,42 @@ class _JobViewPageState extends State<JobViewPage> {
             'Salary',
             jobData['job_salary'] ?? 'Not specified',
           ),
+          const SizedBox(height: 16),
+          _buildInfoRow(
+            Icons.score_outlined,
+            'Match Score',
+            matchScore != null ? '$matchScore%' : 'N/A',
+          ),
+          if (matchScore != null && matchScore! < 50 && _isSubscribed)
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: ElevatedButton(
+                onPressed: () async {
+                  final suggestion = await getSkillSuggestion(
+                    jobData['techskills'],
+                    jobData['softskills'],
+                  );
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Skill Improvement Suggestion'),
+                      content: Text(suggestion),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('OK'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2563EB),
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Improve Your Skills'),
+              ),
+            ),
         ],
       ),
     );
@@ -441,6 +573,7 @@ class _JobViewPageState extends State<JobViewPage> {
     return Container(
       padding: const EdgeInsets.all(24),
       color: Colors.white,
+      width: double.infinity,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

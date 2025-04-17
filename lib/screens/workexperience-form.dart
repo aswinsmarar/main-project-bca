@@ -23,6 +23,7 @@ class _WorkExperienceFormScreenState extends State<WorkExperienceFormScreen> {
 
   String? startDate;
   String? endDate;
+  bool isCurrentlyWorking = false; // New state for checkbox
 
   @override
   void initState() {
@@ -36,8 +37,10 @@ class _WorkExperienceFormScreenState extends State<WorkExperienceFormScreen> {
           widget.workExperienceData!['work_description'];
       startDate = widget.workExperienceData!['work_fromdate'];
       _startDateController.text = startDate ?? '';
-      endDate = widget.workExperienceData!['we_todate'];
+      endDate = widget.workExperienceData!['work_todate'];
       _endDateController.text = endDate ?? '';
+      isCurrentlyWorking = widget.workExperienceData!['work_todate'] ==
+          null; // If no end date, assume currently working
     }
   }
 
@@ -49,7 +52,9 @@ class _WorkExperienceFormScreenState extends State<WorkExperienceFormScreen> {
           'work_designation': _positionController.text,
           'work_description': _descriptionController.text,
           'work_fromdate': startDate,
-          'work_todate': endDate,
+          'work_todate': isCurrentlyWorking
+              ? null
+              : endDate, // Set null if currently working
           'user_id': supabase.auth.currentUser!.id,
         };
 
@@ -100,7 +105,8 @@ class _WorkExperienceFormScreenState extends State<WorkExperienceFormScreen> {
         if (isStartDate) {
           startDate = formattedDate;
           _startDateController.text = formattedDate;
-        } else {
+        } else if (!isCurrentlyWorking) {
+          // Only set end date if not currently working
           endDate = formattedDate;
           _endDateController.text = formattedDate;
         }
@@ -194,7 +200,7 @@ class _WorkExperienceFormScreenState extends State<WorkExperienceFormScreen> {
                       value!.isEmpty ? "Enter company name" : null,
                 ),
                 SizedBox(height: 20),
-                Text("Designtion"),
+                Text("Designation"),
                 TextFormField(
                   controller: _positionController,
                   decoration: customInputDecoration("Enter Designation"),
@@ -223,16 +229,42 @@ class _WorkExperienceFormScreenState extends State<WorkExperienceFormScreen> {
                       startDate == null ? "Select start date" : null,
                 ),
                 SizedBox(height: 20),
+                CheckboxListTile(
+                  title: Text("Currently Working"),
+                  value: isCurrentlyWorking,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      isCurrentlyWorking = value ?? false;
+                      if (isCurrentlyWorking) {
+                        endDate = null;
+                        _endDateController
+                            .clear(); // Clear end date when checked
+                      }
+                    });
+                  },
+                  controlAffinity: ListTileControlAffinity.leading,
+                  activeColor: Colors.blueAccent,
+                ),
+                SizedBox(height: 20),
                 Text("End Date"),
                 TextFormField(
                   readOnly: true,
+                  enabled: !isCurrentlyWorking, // Disable if currently working
                   controller: _endDateController,
                   decoration: customInputDecoration("Select end date").copyWith(
                     suffixIcon: Icon(Icons.calendar_today),
+                    fillColor: isCurrentlyWorking
+                        ? Colors.grey.shade200
+                        : Colors.white,
                   ),
-                  onTap: () => _selectDate(context, false),
-                  validator: (value) =>
-                      endDate == null ? "Select end date" : null,
+                  onTap: isCurrentlyWorking
+                      ? null
+                      : () => _selectDate(context, false),
+                  validator: (value) => isCurrentlyWorking
+                      ? null
+                      : endDate == null
+                          ? "Select end date"
+                          : null,
                 ),
                 SizedBox(height: 20),
                 Center(

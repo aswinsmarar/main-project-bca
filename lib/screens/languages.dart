@@ -174,7 +174,7 @@ class _LanguagesState extends State<Languages> {
             padding: const EdgeInsets.symmetric(vertical: 16),
           ),
           child: const Text(
-            "NEXT 3/5",
+            "NEXT 3/6",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),

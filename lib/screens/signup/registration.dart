@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:main_draft1/main.dart';
 import 'package:main_draft1/screens/login.dart';
 import 'package:main_draft1/screens/softskill.dart';
@@ -24,17 +26,59 @@ class _RegistrationState extends State<Registration> {
   TextEditingController addressController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmPasswordController = TextEditingController();
+  TextEditingController dobController = TextEditingController();
+
+  File? _image;
+
+  Future<void> pickImage() async {
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+      });
+    }
+  }
+
+  bool isAdult(String dob) {
+    final birthDate = DateFormat('yyyy-MM-dd').parse(dob);
+    final today = DateTime.now();
+    final age = today.year - birthDate.year;
+    if (today.month < birthDate.month ||
+        (today.month == birthDate.month && today.day < birthDate.day)) {
+      return age - 1 >= 18;
+    }
+    return age >= 18;
+  }
 
   Future<void> signup() async {
     if (_formKey.currentState!.validate()) {
+      if (!isAdult(dobController.text)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("You must be at least 18 years old")),
+        );
+        return;
+      }
       try {
         final AuthResponse response = await supabase.auth.signUp(
-            password: passwordController.text, email: emailController.text);
+          password: passwordController.text,
+          email: emailController.text,
+        );
+        await uploadImage(response.user!.id);
         submit(response.user!.id);
-        print(response.user!.id);
       } catch (e) {
         print("Signup error: $e");
       }
+    }
+  }
+
+  Future<void> uploadImage(String uid) async {
+    if (_image == null) return;
+    final fileName = "${uid}_${DateTime.now().millisecondsSinceEpoch}";
+    try {
+      await supabase.storage.from('profilepictures').upload(fileName, _image!);
+    } catch (e) {
+      print("Image upload error: $e");
     }
   }
 
@@ -47,15 +91,41 @@ class _RegistrationState extends State<Registration> {
         'user_phone': phoneController.text,
         'user_address': addressController.text,
         'user_password': passwordController.text,
+        'user_dob': dobController.text,
       });
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => SoftSkill()),
+        MaterialPageRoute(builder: (context) => const SoftSkill()),
       );
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text("New User Added")));
     } catch (e) {
       print("Error $e");
+    }
+  }
+
+  DateTime? selectedDOB;
+
+  Future<void> _selectDate(BuildContext context) async {
+    DateTime today = DateTime.now();
+    DateTime initialDate = today.subtract(const Duration(days: 18 * 365));
+    DateTime firstDate =
+        today.subtract(const Duration(days: 100 * 365)); // Max 100 years old
+    DateTime lastDate =
+        today.subtract(const Duration(days: 18 * 365)); // Min 18 years old
+
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: firstDate,
+      lastDate: lastDate,
+    );
+
+    if (picked != null && picked != selectedDOB) {
+      setState(() {
+        selectedDOB = picked;
+        dobController.text = DateFormat('yyyy-MM-dd').format(picked);
+      });
     }
   }
 
@@ -69,7 +139,7 @@ class _RegistrationState extends State<Registration> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                SizedBox(
+                const SizedBox(
                   height: 15,
                 ),
                 Lottie.asset('assets/JobAnimation.json', height: 150),
@@ -88,6 +158,19 @@ class _RegistrationState extends State<Registration> {
                   key: _formKey,
                   child: Column(
                     children: [
+                      GestureDetector(
+                        onTap: pickImage,
+                        child: CircleAvatar(
+                          radius: 40,
+                          backgroundImage:
+                              _image != null ? FileImage(_image!) : null,
+                          child: _image == null
+                              ? const Icon(Icons.camera_alt, size: 40)
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
                       TextFormField(
                         controller: nameController,
                         validator: (value) => value!.isEmpty
@@ -135,6 +218,28 @@ class _RegistrationState extends State<Registration> {
                           ),
                           hintText: "Phone",
                           prefixIcon: const Icon(Icons.phone),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: dobController,
+                        readOnly: true, // Prevent manual input
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return "Please select your date of birth";
+                          }
+                          return null;
+                        },
+                        onTap: () => _selectDate(context),
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.grey[200],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          hintText: "Date of Birth",
+                          prefixIcon: const Icon(Icons.calendar_today),
                         ),
                       ),
                       const SizedBox(height: 20),

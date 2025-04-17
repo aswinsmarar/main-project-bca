@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:main_draft1/main.dart';
 import 'package:main_draft1/screens/educationform.dart';
-import 'package:main_draft1/screens/objective.dart';
 import 'package:main_draft1/screens/workexperience.dart';
 
 class EducationListScreen extends StatefulWidget {
+  const EducationListScreen({super.key});
+
   @override
   _EducationListScreenState createState() => _EducationListScreenState();
 }
@@ -12,9 +13,9 @@ class EducationListScreen extends StatefulWidget {
 class _EducationListScreenState extends State<EducationListScreen> {
   List<Map<String, dynamic>> educationData = [];
   bool _isLoading = false;
-  final primaryColor = Color.fromARGB(255, 51, 31, 199);
+  final primaryColor = const Color.fromARGB(255, 51, 31, 199);
   final accentColor =
-      Color.fromARGB(255, 51, 31, 199); // A vibrant accent color
+      const Color.fromARGB(255, 51, 31, 199); // A vibrant accent color
 
   @override
   void initState() {
@@ -90,7 +91,7 @@ class _EducationListScreenState extends State<EducationListScreen> {
                 ? Center(child: CircularProgressIndicator(color: primaryColor))
                 : ListView.builder(
                     shrinkWrap: true,
-                    padding: EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(16),
                     itemCount: educationData.length + 1,
                     itemBuilder: (context, index) {
                       if (index == educationData.length) {
@@ -101,7 +102,7 @@ class _EducationListScreenState extends State<EducationListScreen> {
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) =>
-                                        EducationFormScreen()),
+                                        const EducationFormScreen()),
                               );
 
                               if (result == true) {
@@ -110,11 +111,11 @@ class _EducationListScreenState extends State<EducationListScreen> {
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: primaryColor,
-                              shape: CircleBorder(),
-                              padding: EdgeInsets.all(12),
+                              shape: const CircleBorder(),
+                              padding: const EdgeInsets.all(12),
                             ),
-                            child:
-                                Icon(Icons.add, size: 30, color: Colors.white),
+                            child: const Icon(Icons.add,
+                                size: 30, color: Colors.white),
                           ),
                         );
                       }
@@ -123,7 +124,7 @@ class _EducationListScreenState extends State<EducationListScreen> {
 
                       return Card(
                         elevation: 4,
-                        margin: EdgeInsets.symmetric(vertical: 8),
+                        margin: const EdgeInsets.symmetric(vertical: 8),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -143,9 +144,9 @@ class _EducationListScreenState extends State<EducationListScreen> {
                               }
                             });
                           },
-                          contentPadding: EdgeInsets.all(16),
+                          contentPadding: const EdgeInsets.all(16),
                           leading: Container(
-                            padding: EdgeInsets.all(10),
+                            padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
                               color: accentColor.withOpacity(0.2),
                               shape: BoxShape.circle,
@@ -171,24 +172,25 @@ class _EducationListScreenState extends State<EducationListScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: Icon(Icons.delete, color: Colors.red),
+                                icon:
+                                    const Icon(Icons.delete, color: Colors.red),
                                 onPressed: () async {
                                   bool confirmDelete = await showDialog(
                                     context: context,
                                     builder: (context) => AlertDialog(
-                                      title: Text("Delete Education"),
-                                      content: Text(
+                                      title: const Text("Delete Education"),
+                                      content: const Text(
                                           "Are you sure you want to delete this education entry?"),
                                       actions: [
                                         TextButton(
                                           onPressed: () =>
                                               Navigator.pop(context, false),
-                                          child: Text("Cancel"),
+                                          child: const Text("Cancel"),
                                         ),
                                         TextButton(
                                           onPressed: () =>
                                               Navigator.pop(context, true),
-                                          child: Text("Delete",
+                                          child: const Text("Delete",
                                               style:
                                                   TextStyle(color: Colors.red)),
                                         ),
@@ -231,7 +233,7 @@ class _EducationListScreenState extends State<EducationListScreen> {
             padding: const EdgeInsets.symmetric(vertical: 16),
           ),
           child: const Text(
-            "NEXT 4/5",
+            "NEXT 4/6",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),

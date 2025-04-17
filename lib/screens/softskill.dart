@@ -175,7 +175,7 @@ class _SoftSkillState extends State<SoftSkill> {
             padding: const EdgeInsets.symmetric(vertical: 16),
           ),
           child: const Text(
-            "NEXT 1/5",
+            "NEXT 1/6",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),

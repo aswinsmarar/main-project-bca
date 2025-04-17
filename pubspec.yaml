@@ -21,6 +21,7 @@ dependencies:
   open_file: ^3.5.10
   path_provider: ^2.1.5
   mailer: ^6.4.1
+  animate_do: ^4.2.0
   
 
 dev_dependencies:

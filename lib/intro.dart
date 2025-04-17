@@ -9,7 +9,6 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  @override
   double _opacity = 0.0;
 
   @override
@@ -17,18 +16,18 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
 
     // Start fade-in animation
-    Future.delayed(Duration(milliseconds: 3000), () {
+    Future.delayed(const Duration(milliseconds: 3000), () {
       setState(() {
         _opacity = 1.0;
       });
     });
 
     // Navigate to Login screen after 3 seconds
-    Future.delayed(Duration(seconds: 3), () {
+    Future.delayed(const Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-            builder: (context) => Login()), // Navigate to Login Page
+            builder: (context) => const Login()), // Navigate to Login Page
       );
     });
   }
@@ -39,7 +38,7 @@ class _SplashScreenState extends State<SplashScreen> {
       backgroundColor: Colors.white,
       body: Center(
         child: AnimatedOpacity(
-          duration: Duration(seconds: 3),
+          duration: const Duration(seconds: 3),
           opacity: _opacity,
           child: Image.asset('assets/logo.png', width: 300), // Your logo
         ),

@@ -175,7 +175,7 @@ class _TechnicalSkillsState extends State<TechnicalSkills> {
             padding: const EdgeInsets.symmetric(vertical: 16),
           ),
           child: const Text(
-            "NEXT 2/5",
+            "NEXT 2/6",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),

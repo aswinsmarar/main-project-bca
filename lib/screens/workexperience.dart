@@ -235,7 +235,7 @@ class _WorkExperienceListScreenState extends State<WorkExperienceListScreen> {
             padding: const EdgeInsets.symmetric(vertical: 16),
           ),
           child: const Text(
-            "NEXT 3/5",
+            "NEXT 5/6",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),

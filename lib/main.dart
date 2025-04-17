@@ -1,16 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:main_draft1/intro.dart';
-import 'package:main_draft1/screens/education.dart';
-import 'package:main_draft1/screens/homescreen.dart';
-import 'package:main_draft1/screens/login.dart';
-import 'package:main_draft1/screens/mail.dart';
-import 'package:main_draft1/screens/objective.dart';
-import 'package:main_draft1/screens/softskill.dart';
-import 'package:main_draft1/screens/technicalskills.dart';
-import 'package:main_draft1/screens/uploadcv.dart';
-import 'package:main_draft1/screens/viewjob.dart';
-import 'package:main_draft1/screens/workexperience-form.dart';
-import 'package:main_draft1/screens/workexperience.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
@@ -29,6 +18,7 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(debugShowCheckedModeBanner: false, home: EmailSender());
+    return const MaterialApp(
+        debugShowCheckedModeBanner: false, home: SplashScreen());
   }
 }
